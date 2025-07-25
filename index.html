@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lyrical Chemistry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    body {
+      overflow: hidden;
+    }
+
+    .heart {
+      will-change: transform, opacity;
+    }
+
+    .element-box {
+      position: relative;
+      color: #fff;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .atomic-number {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      font-size: 0.65rem;
+      opacity: 0.8;
+    }
+
+    .element-name {
+      font-size: 0.65rem;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+
+    #backgroundStars div {
+      will-change: transform, opacity;
+    }
+  </style>
+</head>
+
+<body class="bg-black text-green-400 flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden">
+
+  <!-- Background Stars Container -->
+  <div id="backgroundStars" class="absolute inset-0 pointer-events-none z-0"></div>
+
+  <!-- Responsive Start Button -->
+  <button id="startButton"
+    class="relative z-10 mb-6 px-6 md:px-10 py-3 md:py-5 text-base md:text-xl bg-pink-600 text-white rounded-full shadow-lg hover:bg-pink-700 transition">
+    Listen To My Love With My Chemistry
+  </button>
+
+  <!-- Hidden Audio -->
+  <audio id="audio" class="hidden">
+    <source src="Saiyaara.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <div id="lyrics" class="w-full max-w-6xl relative min-h-[200px] md:min-h-[300px] flex justify-center items-center"></div>
+
+  <script>
+    const lyricsData = [
+      { time: 4, text: "Hmm Hmm…" },
+      { time: 24, text: "Tu Paas Hai Mere Paas Hai Aise" },
+      { time: 28, text: "Mera Koi Ehsaas Hai Jaise" },
+      { time: 35, text: "Tu Paas Hai Mere Paas Hai Aise" },
+      { time: 40, text: "Mera Koi Ehsaas Hai Jaise" },
+      { time: 45, text: "Haye Main Mar Hi Jaaun" },
+      { time: 49, text: "Jo Tujhko Na Paaun" },
+      { time: 52, text: "Baaton Mein Teri Main" },
+      { time: 56, text: "Raatein Bitaun" },
+      { time: 58, text: "Honthon Pe Lamhan Lamhan" },
+      { time: 61, text: "Hai Naam Tera Haaye" },
+      { time: 63, text: "Tujhko Hi Gaaun Main" },
+      { time: 67, text: "Tujhko Pukarun… Ho Ho.." },
+      { time: 81, text: "Saiyaara Tu Toh Badla Nahi Hai" },
+      { time: 86, text: "Mausam Zara Sa Rootha Hua Hai" },
+      { time: 92, text: "Saiyaara Tu To Badla Nahi Hai" },
+      { time: 98, text: "Mausam Zara Sa Rootha Hua Hai" },
+      { time: 105, text: "Sorry" },
+      { time: 143, text: "......." }
+    ];
+
+    const elementMap = {
+      A: { symbol: "Al", number: 13, name: "Aluminum" },
+      B: { symbol: "B", number: 5, name: "Boron" },
+      C: { symbol: "C", number: 6, name: "Carbon" },
+      D: { symbol: "Dy", number: 66, name: "Dysprosium" },
+      E: { symbol: "Er", number: 68, name: "Erbium" },
+      F: { symbol: "F", number: 9, name: "Fluorine" },
+      G: { symbol: "Ga", number: 31, name: "Gallium" },
+      H: { symbol: "H", number: 1, name: "Hydrogen" },
+      I: { symbol: "I", number: 53, name: "Iodine" },
+      J: { symbol: "J", number: "I/A", name: "Current Density" },
+      K: { symbol: "K", number: 19, name: "Potassium" },
+      L: { symbol: "Li", number: 3, name: "Lithium" },
+      M: { symbol: "Mg", number: 12, name: "Magnesium" },
+      N: { symbol: "N", number: 7, name: "Nitrogen" },
+      O: { symbol: "O", number: 8, name: "Oxygen" },
+      P: { symbol: "P", number: 15, name: "Phosphorus" },
+      Q: { symbol: "Q", number: "ρv*v", name: "Charge" },
+      R: { symbol: "Rn", number: 86, name: "Radon" },
+      S: { symbol: "S", number: 16, name: "Sulfur" },
+      T: { symbol: "Ti", number: 22, name: "Titanium" },
+      U: { symbol: "U", number: 92, name: "Uranium" },
+      V: { symbol: "V", number: 23, name: "Vanadium" },
+      W: { symbol: "W", number: 74, name: "Tungsten" },
+      X: { symbol: "Xe", number: 54, name: "Xenon" },
+      Y: { symbol: "Y", number: 39, name: "Yttrium" },
+      Z: { symbol: "Zn", number: 30, name: "Zinc" }
+    };
+
+    const elementColors = {
+      Al: "#60A5FA", B: "#FBBF24", C: "#34D399", Dy: "#8B5CF6", Er: "#F472B6",
+      F: "#FACC15", Ga: "#3B82F6", H: "#10B981", I: "#F43F5E", J: "#6B7280",
+      K: "#F59E0B", Li: "#93C5FD", Mg: "#A78BFA", N: "#4ADE80", O: "#22D3EE",
+      P: "#F87171", Q: "#6B7280", Rn: "#C084FC", S: "#FDE68A", Ti: "#67E8F9",
+      U: "#F87171", V: "#818CF8", W: "#4B5563", Xe: "#C084FC", Y: "#FBBF24",
+      Zn: "#6EE7B7"
+    };
+
+    const lyricsContainer = document.getElementById('lyrics');
+    const audio = document.getElementById('audio');
+    const startButton = document.getElementById('startButton');
+    const starsContainer = document.getElementById('backgroundStars');
+    const lineWrappers = [];
+
+    lyricsData.forEach(line => {
+      const lineWrapper = document.createElement('div');
+      lineWrapper.className = 'flex flex-wrap gap-2 md:gap-4 justify-center absolute top-[0px] opacity-0 px-2';
+
+      const chars = line.text.toUpperCase().split('');
+
+      chars.forEach(char => {
+        if (/[A-Z]/.test(char)) {
+          const element = elementMap[char];
+          const color = elementColors[element.symbol] || "#6B7280";
+          const box = document.createElement('div');
+          box.className = `element-box w-14 h-14 md:w-24 md:h-24 border-2 border-green-500 rounded-xl flex flex-col items-center justify-center text-center`;
+          box.style.background = color;
+          box.innerHTML = `
+            <div class="atomic-number">${element.number || ""}</div>
+            <div class="text-base md:text-2xl font-bold">${element.symbol}</div>
+            <div class="element-name">${element.name || ""}</div>
+          `;
+          lineWrapper.appendChild(box);
+        } else {
+          const box = document.createElement('div');
+          box.className = 'w-14 h-14 md:w-24 md:h-24 flex items-center justify-center text-sm md:text-xl text-gray-400';
+          box.textContent = char;
+          lineWrapper.appendChild(box);
+        }
+      });
+
+      lyricsContainer.appendChild(lineWrapper);
+      lineWrappers.push(lineWrapper);
+    });
+
+    let currentIndex = 0;
+    let lyricsFinished = false;
+
+    function showLyrics() {
+      const currentTime = audio.currentTime;
+
+      if (currentIndex < lyricsData.length && currentTime >= lyricsData[currentIndex].time) {
+        lineWrappers.forEach((wrapper, i) => {
+          if (i !== currentIndex) {
+            gsap.to(wrapper, { opacity: 0, duration: 0.5, ease: "power2.out" });
+          }
+        });
+
+        gsap.fromTo(lineWrappers[currentIndex],
+          { opacity: 0, x: -200 },
+          { opacity: 1, x: 0, duration: 1.2, ease: "power4.out" }
+        );
+
+        currentIndex++;
+      }
+
+      if (currentIndex === lyricsData.length && !lyricsFinished) {
+        lyricsFinished = true;
+        setTimeout(() => {
+          gsap.to("#lyrics", { opacity: 0, duration: 1, ease: "power2.inOut" });
+        }, 1000);
+      }
+
+      if (!audio.paused && !audio.ended) {
+        requestAnimationFrame(showLyrics);
+      }
+    }
+
+    function addLoveChemistryAnimations() {
+      lineWrappers.forEach(wrapper => {
+        const boxes = wrapper.querySelectorAll('.element-box');
+        boxes.forEach((box, index) => {
+          gsap.to(box, {
+            scale: 1.1,
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5 + Math.random(),
+            ease: "sine.inOut",
+            delay: index * 0.2
+          });
+        });
+      });
+
+      for (let i = 0; i < 40; i++) {
+        const heart = document.createElement('div');
+        heart.innerHTML = '❤️';
+        heart.className = 'absolute text-xl pointer-events-none heart';
+        heart.style.left = `${Math.random() * 100}%`;
+        heart.style.top = `${Math.random() * 100}%`;
+        document.body.appendChild(heart);
+
+        gsap.to(heart, {
+          x: `+=${Math.random() * 200 - 100}`,
+          y: `+=${Math.random() * 200 - 100}`,
+          opacity: 0,
+          duration: 10 + Math.random() * 4,
+          ease: "power2.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: Math.random() * 5
+        });
+      }
+
+      for (let i = 0; i < 30; i++) {
+        const fallingHeart = document.createElement('div');
+        fallingHeart.innerHTML = '❤️';
+        fallingHeart.className = 'absolute text-xl pointer-events-none heart';
+        fallingHeart.style.left = `${Math.random() * 100}%`;
+        fallingHeart.style.top = `-40px`;
+        document.body.appendChild(fallingHeart);
+
+        gsap.to(fallingHeart, {
+          y: window.innerHeight + 40,
+          duration: 14 + Math.random() * 8,
+          ease: "power1.inOut",
+          repeat: -1,
+          delay: Math.random() * 5
+        });
+      }
+    }
+
+    for (let i = 0; i < 50; i++) {
+      const star = document.createElement('div');
+      star.innerHTML = "✨";
+      star.style.position = "absolute";
+      star.style.fontSize = "1rem";
+      star.style.opacity = "0.6";
+      star.style.pointerEvents = "none";
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      starsContainer.appendChild(star);
+
+      gsap.to(star, {
+        y: `+=${Math.random() * 100 - 50}`,
+        x: `+=${Math.random() * 100 - 50}`,
+        opacity: 0,
+        duration: 4 + Math.random() * 4,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true
+      });
+    }
+
+    gsap.to("#startButton", {
+      scale: 1.05,
+      duration: 1.2,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true
+    });
+
+    gsap.to("#startButton", {
+      boxShadow: "0 0 30px rgba(255, 20, 147, 0.7)",
+      duration: 2,
+      ease: "power2.inOut",
+      repeat: -1,
+      yoyo: true
+    });
+
+    startButton.addEventListener('click', () => {
+      gsap.to("#backgroundStars", {
+        opacity: 0,
+        duration: 0.6,
+        onComplete: () => {
+          starsContainer.remove();
+        }
+      });
+
+      gsap.to(startButton, {
+        scale: 1.3,
+        rotation: 360,
+        duration: 0.7,
+        ease: "back.inOut(1.7)",
+        onComplete: () => {
+          gsap.to(startButton, {
+            opacity: 0,
+            scale: 0.5,
+            duration: 0.6,
+            ease: "power2.in",
+            onComplete: () => {
+              startButton.style.display = 'none';
+
+              audio.play().then(() => {
+                requestAnimationFrame(showLyrics);
+                addLoveChemistryAnimations();
+              }).catch(err => {
+                console.log("Autoplay failed", err);
+              });
+            }
+          });
+        }
+      });
+
+      setTimeout(() => {
+        if (!audio.paused) {
+          audio.pause();
+        }
+      }, 143000);
+    });
+  </script>
+</body>
+
+</html>
